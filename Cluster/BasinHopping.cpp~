@@ -1,0 +1,335 @@
+//用来写BH算法的主程序
+
+
+
+
+#include "BasinHopping.h"
+#include "BH_Manage.h"
+#include "LocalTool.h"
+#include "Tool.h"
+#include "PE_Tool.h"
+#include "LocalTool.h"
+#include<ctime>
+
+BH_Individual::BH_Individual(void){
+	cout<<"bh-ind"<<endl;
+	this->cood = NULL;
+}
+
+BH_Individual::BH_Individual(int N){
+	cout<<"bh-ind"<<endl;
+	this->set3N(N);
+}
+
+BH_Individual::~BH_Individual(void){
+
+	if(this->cood != NULL)
+		free(this->cood);
+}
+
+void BH_Individual::set3N(int N)
+{
+	this->N = N;
+	this->cood = (double *)malloc(3 * N * sizeof(double));
+}
+
+void BH_Individual::operator=(BH_Individual &ind)
+{
+	if (N != ind.N && N != 0)
+	{
+		throw "BH个体原子数不对等";
+		return;
+	}
+	if( cood == NULL || ind.cood == NULL){
+		throw "未开辟坐标数组";
+		return;
+	}
+
+	for (int i=0; i < 3*N; i++)
+		cood[i] = ind.cood[i];
+	energy = ind.energy;
+}
+
+void BH_Individual::Copy(BH_Individual *bh, int N)
+{
+	int i;
+	for(i = 0; i < 3 * N; i++)
+	{
+		this->cood[i] = bh->cood[i];
+	}
+	this->energy = bh->energy;
+}
+
+
+BasinHopping::BasinHopping(int N)
+{
+	cout<<"bh"<<endl;
+	this->N = N;
+	this->current.set3N(N);
+	this->best.set3N(N);
+	this->change.set3N(N);
+	this->prebest.set3N(N);
+	//initDate(N);
+}
+BasinHopping::BasinHopping(void){
+	
+	int i;
+
+	cout<<"N="<<N<<endl;
+	this->popsize = 50;//(N+10)/10*10;
+
+	this->P_E = PE_Tool::FS_E;
+	this->P_F = PE_Tool::FS_F;
+	//this->next = NULL;//只用到了一次为什么要用
+	//this->mutMode = DERAND1;
+	this->X = (BH_Individual *)malloc(this->popsize * sizeof(BH_Individual));
+	this->Y = (BH_Individual *)malloc(this->popsize * sizeof(BH_Individual));
+	this->Z = (BH_Individual *)malloc(this->popsize * sizeof(BH_Individual));
+	this->best.cood = (double *)malloc(3*this->N * sizeof(double));
+	for( i = 0; i < this->popsize; i++)
+	{	
+		this->X[i].cood = (double *)malloc(3*this->N * sizeof(double));
+		this->Y[i].cood = (double *)malloc(3*this->N * sizeof(double));
+		this->Z[i].cood = (double *)malloc(3*this->N * sizeof(double));
+	}
+	this->Initialization();
+	
+}
+
+BasinHopping::~BasinHopping(void)
+{
+	int i;
+	cout<<"BasinHopping析构"<<endl;
+	for(i=0;i<this->popsize;i++){
+	
+		free(this->X[i].cood); 
+		free(this->Y[i].cood);
+		free(this->Z[i].cood);
+
+	}
+	free(this->X);
+	free(this->Y);
+	free(this->Z);
+
+}
+
+void BasinHopping::initDate(int N){
+	this->N=N;
+	this->P_E = PE_Tool::FS_E;
+	this->P_F = PE_Tool::FS_F;
+	kIndex = 0;
+	double r0= 2.75;
+	for(int i=0; i<3 *N; i++)
+		current.cood[i] = (RAND-0.5) * r0 * pow((double)N,1.0/3);
+
+	BH_Individual temp(N);
+	temp = current;
+	current.energy = Tool::Local(temp.cood,N,P_E,P_F);   //表达已经输出了初始状态下的局部优化最小值；
+	best = current;
+	prebest = best;
+	cout<<"初始的局部优化后的能量："<<best.energy<<endl;
+	cout<<"当前局部优化后的能量："<<current.energy<<endl;
+}
+
+
+void BasinHopping::Initialization()
+{
+	int i,j;
+	double r0= 2.75;
+	BH_Individual *best1;
+	best1 = this->X;
+	
+	for (i=0;i<popsize;i++)
+	{
+		for (j=0;j<3*N;j++)
+		{
+			X[i].cood[j] = (RAND-0.5) * r0 * pow((double)N,1.0/3);
+		}
+		X[i].energy = LocalTool::shareDefault()->localWithCoodAndPE(this->X[i].cood,this->N,this->P_E,this->P_F);
+		if(this->X[i].energy < best1->energy)
+			best1 = this->X+i;
+	}
+	cout<<"初始种群中的最优值能量"<<best1->energy;
+}
+
+
+void BasinHopping::start(){
+	successRate = 0;
+	int success = 0;
+	int all = 0;
+	
+
+
+}
+
+
+void BasinHopping::disturbance()//扰动函数部分
+{
+	//_sleep(0.1*1000);
+	srand((unsigned)time(NULL));
+	int i,u,a[3];
+	static int k=0;
+	double s=0.06;
+	double *lx,*ly,*lz,*cx,*cy,*cz;
+	change=current;
+	cx = current.cood;
+	cy = current.cood + N;
+	cz = current.cood + 2*N;
+	lx = change.cood;
+	ly = change.cood + N;
+	lz = change.cood + 2*N;
+
+   // for(u=0;u<popsize;u++){
+
+	    for(i = 0; i < N; i++){
+		//_sleep(0.1*1000);
+		//cout<<"原子坐标的变化方向是："<<endl;
+		for(int j=0;j<3;j++)
+		{
+			
+			a[j]=rand()%3-1;
+
+			//cout<<a[j]<<'\t';
+			
+			
+		}
+			lx[i] = cx[i] + a[1]*s;
+			ly[i] = cy[i] + a[2]*s;
+			lz[i] = cz[i] + a[3]*s;
+			change.cood[i] = lx[i];
+			change.cood[i + N] = ly[i];
+			change.cood[i + 2*N] = lz[i];
+			//X[u].cood[i] = ly[i];
+			//X[u].cood[i + N] = ly[i];
+			//X[u].cood[i + 2*N] = ly[i];
+
+ 		
+	//}
+	}
+	
+	//cout<<a[0]<<'\t'<<a[1]<<'\t'<<a[2]<<endl;
+	change.energy = Tool::Local(change.cood,N,P_E,P_F);//扰动似乎没有效果 第一次扰动的结果和第二次扰动结果一样
+	++k;
+	cout<<"第"<<k<<"次扰动后能量："<<change.energy<<endl;
+	//current=change;
+
+
+}
+
+void BasinHopping::remake()
+{
+	srand((unsigned)time(NULL));
+	int i,j,l;
+	int b[3];
+	BH_Individual *best2;
+	best2 = this->X;
+	const int M;
+	double lx[M][M];
+	//double **lx,**ly,**lz,**cx,**cy,**cz;
+	for(i=0;i<popsize;i+)
+	{	
+		Y=X;
+		for(j=0;j<N;j++)
+		{
+			lx[i][j] = X[i].cood[j];
+			ly[i][j] = X[i].cood[j + N];
+			lz[i][j] = X[i].cood[j + 2*N];
+			cx[i][j] = Y[i].cood[j];
+			cy[i][j] = Y[i].cood[j + N];
+			cz[i][j] = Y[i].cood[j + 2*N];
+			//lx[i][j] = x[i].cood[j];
+			for(l=0;l<3;l++)
+			{
+				a[l]=rand()%3-1;
+			}
+				lx[i][j] = cx[i][j] + a[1]*s;
+				ly[i] = cy[i] + a[2]*s;
+				lz[i] = cz[i] + a[3]*s;
+				X[i].cood[j] = ly[i];
+				X[i].cood[j + N] = ly[i];
+				X[i].cood[j + 2*N] = ly[i];
+		}
+		if(this->X[i].energy < best2->energy)
+			best2 = this->X+i;
+	}
+	++K
+	X[i].energy = LocalTool::shareDefault()->localWithCoodAndPE(this->X[i].cood,this->N,this->P_E,this->P_F);
+	
+	cout<<"第"<<k<<"次扰动后的种群中的最优结果"<<best2->energy;
+}
+
+void BasinHopping::compare()
+{
+	int i;
+	double temp=0;
+	for (i=1;i<popsize;i++)
+	{
+		if(X[i].energy>Y[i].energy)
+		{
+			X[i]=Y[i];
+		}
+
+	}
+	//cout<<"第"<<k<<"代最好的种群是："<<X[i].energy;
+}
+
+
+double BasinHopping::Greedy()//此处还要存在有条件选择。。有问题
+{	
+	prebest = best;
+	if(best.energy>=change.energy)
+		{
+			best = change;
+			//current = change;
+			cout<<"T比较后最优值："<<best.energy<<endl;
+		}
+	else{
+		//current = change;
+		cout<<"F比较后的最优值："<<best.energy<<endl;
+	}
+	
+	return best.energy;
+}
+
+double BasinHopping::changeRate()
+{
+	double rate = 0;
+	double bestE=-64.8;//本来应该是输入的全局变量
+	/*kIndex ++;
+	k[kIndex] = fabs((prebest.energy - bestE) / bestE); ////根本没有取出最后10个能量值
+	cout<<"局部优化最优值："<<best.energy<<endl;
+	for(int i= 0; i < 10; i++)
+		rate += k[i];
+	rate /= 10;*/
+	rate = fabs((prebest.energy - bestE) / bestE);
+	cout<<"误差："<<rate<<endl;
+	return rate;
+
+}
+
+/*void check(){
+	double objEnergy;
+	cout<<"请输入目标能量："<<endl;
+	cin>>objEnergy;
+	objbest=objEnergy;
+}*/
+
+/*bool BasinHopping::EndingCondition(BasinHopping &BH){
+	//BH_Individual current;
+	//BH_Manage BM;
+	//this->objbest=objbest;
+	//BH_Individual best;
+	double m=0.001;
+	//if(BH.changeRate()<m)//rate没有赋值进来
+	if((current.energy-objbest)/objbest<=m)
+	{
+		cout<<"迭代到此结束"<<endl;
+		cout<<"最后的实验结果是："<<current.energy<<endl;
+		return false;
+	}
+	else
+	{
+		cout<<"当前局部优化的能量最优值："<<current.energy<<endl;
+		return true;
+	}
+}*/

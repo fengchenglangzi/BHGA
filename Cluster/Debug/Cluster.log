@@ -1,0 +1,13 @@
+﻿  BasinHopping.cpp
+F:\Postgraduates\Programs\Changes\BHMC\Cluster\BasinHopping.cpp(524,35): warning C4390: “;”: 找到空的受控语句；这是否是有意的?
+F:\Postgraduates\Programs\Changes\BHMC\Cluster\BasinHopping.cpp(489,9): warning C4101: “E0”: 未引用的局部变量
+F:\Postgraduates\Programs\Changes\BHMC\Cluster\BasinHopping.cpp(487,8): warning C4101: “vote”: 未引用的局部变量
+F:\Postgraduates\Programs\Changes\BHMC\Cluster\BasinHopping.cpp(631,20): warning C4101: “ren”: 未引用的局部变量
+F:\Postgraduates\Programs\Changes\BHMC\Cluster\BasinHopping.cpp(631,24): warning C4101: “g”: 未引用的局部变量
+F:\Postgraduates\Programs\Changes\BHMC\Cluster\BasinHopping.cpp(631,41): warning C4101: “temp”: 未引用的局部变量
+F:\Postgraduates\Programs\Changes\BHMC\Cluster\BasinHopping.cpp(720,16): warning C4101: “cood_L”: 未引用的局部变量
+F:\Postgraduates\Programs\Changes\BHMC\Cluster\BasinHopping.cpp(720,10): warning C4101: “coor”: 未引用的局部变量
+F:\Postgraduates\Programs\Changes\BHMC\Cluster\BasinHopping.cpp(718,8): warning C4101: “j”: 未引用的局部变量
+LINK : warning LNK4075: 忽略“/INCREMENTAL”(由于“/PROFILE”规范)
+BasinHopping.obj : warning LNK4075: 忽略“/EDITANDCONTINUE”(由于“/OPT:REF”规范)
+  Cluster.vcxproj -> F:\Postgraduates\Programs\Changes\BHMC\Debug\Cluster.exe

@@ -1,0 +1,17 @@
+﻿生成启动时间为 2015-9-25 10:55:24。
+     1>项目“C:\Documents and Settings\Administrator\桌面\程序\Cluster20150816\Cluster\Cluster.vcxproj”在节点 3 上(build 个目标)。
+     1>InitializeBuildStatus:
+         正在创建“Release\Cluster.unsuccessfulbuild”，因为已指定“AlwaysCreate”。
+       ClCompile:
+         所有输出均为最新。
+       Link:
+         所有输出均为最新。
+         Cluster.vcxproj -> C:\Documents and Settings\Administrator\桌面\程序\Cluster20150816\Release\Cluster.exe
+       FinalizeBuildStatus:
+         正在删除文件“Release\Cluster.unsuccessfulbuild”。
+         正在对“Release\Cluster.lastbuildstate”执行 Touch 任务。
+     1>已完成生成项目“C:\Documents and Settings\Administrator\桌面\程序\Cluster20150816\Cluster\Cluster.vcxproj”(build 个目标)的操作。
+
+生成成功。
+
+已用时间 00:00:00.67
